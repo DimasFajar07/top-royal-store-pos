@@ -53,25 +53,56 @@ export default function Reports() {
     try {
       const { buckets, startISO, endISO } = getPeriodRange();
       const { data } = await supabase.from('transactions')
-        .select('id, tanggal, total, metode_pembayaran, diskon, users(nama)')
+        .select(`
+          id, 
+          tanggal, 
+          total, 
+          metode_pembayaran, 
+          diskon, 
+          users(nama),
+          transaction_items(
+            jumlah,
+            harga,
+            products(harga_beli)
+          )
+        `)
         .gte('tanggal', startISO)
         .lte('tanggal', endISO)
         .order('tanggal', { ascending: false });
 
-      const txs = data || [];
+      const txs = (data || []).map(tx => {
+        // Calculate HPP (Cost of Goods Sold) for this transaction
+        const hpp = tx.transaction_items?.reduce((acc: number, item: any) => {
+          const cost = item.products?.harga_beli || 0;
+          return acc + (cost * item.jumlah);
+        }, 0) || 0;
+        
+        return {
+          ...tx,
+          hpp,
+          laba: tx.total - hpp
+        };
+      });
+
       setTransactions(txs);
 
       // Group by bucket
       const grouped = buckets.map(b => {
         const inBucket = txs.filter(tx => tx.tanggal >= b.start && tx.tanggal <= b.end);
-        return { ...b, total: inBucket.reduce((s, t) => s + t.total, 0), count: inBucket.length };
+        return { 
+          ...b, 
+          total: inBucket.reduce((s, t) => s + t.total, 0), 
+          laba: inBucket.reduce((s, t) => s + t.laba, 0),
+          count: inBucket.length 
+        };
       });
 
       setChartData({
         labels: grouped.map(b => b.label),
         datasets: [
           { label: 'Penjualan (Rp)', data: grouped.map(b => b.total), backgroundColor: 'rgba(13,148,136,0.7)', borderColor: '#0d9488', borderWidth: 1, borderRadius: 6 },
-          { label: 'Jumlah Transaksi', data: grouped.map(b => b.count), backgroundColor: 'rgba(99,102,241,0.6)', borderColor: '#6366f1', borderWidth: 1, borderRadius: 6, yAxisID: 'y2' }
+          { label: 'Laba Kotor (Rp)', data: grouped.map(b => b.laba), backgroundColor: 'rgba(245,158,11,0.6)', borderColor: '#f59e0b', borderWidth: 1, borderRadius: 6 },
+          { label: 'Jumlah Transaksi', data: grouped.map(b => b.count), backgroundColor: 'rgba(99,102,241,0.4)', borderColor: '#6366f1', borderWidth: 1, borderRadius: 6, yAxisID: 'y2' }
         ]
       });
     } finally {
@@ -80,6 +111,8 @@ export default function Reports() {
   };
 
   const totalRevenue = transactions.reduce((s, t) => s + t.total, 0);
+  const totalLabaKotor = transactions.reduce((s, t) => s + t.laba, 0);
+  const totalLabaBersih = totalLabaKotor; // For now assuming no extra expenses
   const avgRevenue = transactions.length > 0 ? Math.round(totalRevenue / transactions.length) : 0;
   const totalTunai = transactions.filter(t => t.metode_pembayaran === 'cash').reduce((s, t) => s + t.total, 0);
   const totalNonTunai = transactions.filter(t => t.metode_pembayaran !== 'cash').reduce((s, t) => s + t.total, 0);
@@ -155,19 +188,23 @@ export default function Reports() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
         {[
           { label: 'Total Pendapatan', value: `Rp ${totalRevenue.toLocaleString('id-ID')}`, icon: DollarSign, color: 'text-teal-600', bg: 'bg-teal-50' },
+          { label: 'Laba Kotor', value: `Rp ${totalLabaKotor.toLocaleString('id-ID')}`, icon: TrendingUp, color: 'text-amber-600', bg: 'bg-amber-50' },
+          { label: 'Laba Bersih', value: `Rp ${totalLabaBersih.toLocaleString('id-ID')}`, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50' },
           { label: 'Jumlah Transaksi', value: transactions.length, icon: ShoppingCart, color: 'text-blue-600', bg: 'bg-blue-50' },
           { label: 'Rata-rata / Transaksi', value: `Rp ${avgRevenue.toLocaleString('id-ID')}`, icon: TrendingUp, color: 'text-violet-600', bg: 'bg-violet-50' },
           { label: 'Non-Tunai', value: `Rp ${totalNonTunai.toLocaleString('id-ID')}`, icon: ShoppingCart, color: 'text-orange-600', bg: 'bg-orange-50' },
         ].map(({ label, value, icon: Icon, color, bg }) => (
-          <div key={label} className="bg-white rounded-xl shadow-sm border p-4">
-            <div className={`inline-flex p-2 ${bg} rounded-lg mb-2`}>
-              <Icon className={`w-4 h-4 ${color}`} />
+          <div key={label} className="bg-white rounded-xl shadow-md border border-gray-100 p-6 flex flex-col justify-between hover:shadow-lg transition-shadow">
+            <div>
+              <div className={`inline-flex p-3 ${bg} rounded-xl mb-3`}>
+                <Icon className={`w-5 h-5 ${color}`} />
+              </div>
+              <p className="text-sm text-gray-500 font-medium">{label}</p>
             </div>
-            <p className="text-xs text-gray-500">{label}</p>
-            <p className="text-base font-bold text-gray-900 mt-0.5 truncate">{value}</p>
+            <p className="text-xl font-extrabold text-gray-900 mt-2 truncate">{value}</p>
           </div>
         ))}
       </div>

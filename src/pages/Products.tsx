@@ -33,6 +33,7 @@ export default function Products() {
     kategori_id: '',
     kategori: '', // for fallback
     harga: 0,
+    harga_beli: 0,
     stok: 0,
     barcode: '',
     gambar: ''
@@ -69,6 +70,7 @@ export default function Products() {
         kategori_id: product.kategori_id || '',
         kategori: product.kategori || '',
         harga: product.harga,
+        harga_beli: product.harga_beli || 0,
         stok: product.stok,
         barcode: product.barcode || '',
         gambar: product.gambar || ''
@@ -80,6 +82,7 @@ export default function Products() {
         kategori_id: categories.length > 0 ? categories[0].id : '',
         kategori: '',
         harga: 0,
+        harga_beli: 0,
         stok: 0,
         barcode: '',
         gambar: ''
@@ -106,6 +109,7 @@ export default function Products() {
       nama_produk: formData.nama_produk,
       kategori_id: formData.kategori_id, // must use the valid UUID
       harga_jual: formData.harga, // assuming table uses harga_jual
+      harga_beli: formData.harga_beli,
       stok: formData.stok,
       gambar: imageUrl,
       barcode: formData.barcode || null,
@@ -381,27 +385,39 @@ export default function Products() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Harga (Rp)</label>
+              <label className="block text-sm font-medium text-gray-700">Harga Beli / Modal (Rp)</label>
+              <input
+                type="number"
+                required
+                min="0"
+                value={formData.harga_beli}
+                onChange={(e) => setFormData({ ...formData, harga_beli: parseInt(e.target.value) || 0 })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2 bg-yellow-50"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Harga Jual (Rp)</label>
               <input
                 type="number"
                 required
                 min="0"
                 value={formData.harga}
                 onChange={(e) => setFormData({ ...formData, harga: parseInt(e.target.value) || 0 })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2 bg-green-50"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Stok</label>
-              <input
-                type="number"
-                required
-                min="0"
-                value={formData.stok}
-                onChange={(e) => setFormData({ ...formData, stok: parseInt(e.target.value) || 0 })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
-              />
-            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Stok</label>
+            <input
+              type="number"
+              required
+              min="0"
+              value={formData.stok}
+              onChange={(e) => setFormData({ ...formData, stok: parseInt(e.target.value) || 0 })}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+            />
           </div>
 
           <div>

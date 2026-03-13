@@ -8,6 +8,7 @@ export interface Product {
   categories?: { nama: string }; // Joined from Supabase
   kategori: string; // We'll keep this for UI compatibility (mapped from categories)
   harga: number;
+  harga_beli: number;
   stok: number;
   barcode: string | null;
   gambar: string | null;
@@ -59,7 +60,8 @@ export const useProductStore = create<ProductState>((set, get) => ({
           ...item,
           gambar: imageUrl,
           kategori: item.categories?.nama || 'Tanpa Kategori',
-          harga: item.harga_jual || item.harga 
+          harga: item.harga_jual || item.harga,
+          harga_beli: item.harga_beli || 0
         };
       }) || [];
 
