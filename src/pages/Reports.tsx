@@ -101,13 +101,14 @@ export default function Reports() {
 
   const exportPDF = () => {
     const doc = new jsPDF() as any;
-    doc.setFontSize(16); doc.text('Laporan Penjualan - Top Royal Shop', 14, 20);
+    doc.setFontSize(16); doc.text('Laporan Penjualan - Top Royal Shop', 20, 20);
     doc.setFontSize(11);
-    doc.text(`Periode: ${periodLabel}`, 14, 28);
-    doc.text(`Total Pendapatan: Rp ${totalRevenue.toLocaleString('id-ID')}`, 14, 34);
-    doc.text(`Total Transaksi: ${transactions.length}`, 14, 40);
+    doc.text(`Periode: ${periodLabel}`, 20, 30);
+    doc.text(`Total Pendapatan: Rp ${totalRevenue.toLocaleString('id-ID')}`, 20, 38);
+    doc.text(`Total Transaksi: ${transactions.length}`, 20, 46);
     doc.autoTable({
-      startY: 48,
+      startY: 55,
+      margin: { left: 20, right: 20 },
       head: [['No', 'Tanggal', 'Kasir', 'Metode', 'Total']],
       body: transactions.map((tx, i) => [i + 1, format(new Date(tx.tanggal), 'dd/MM/yyyy HH:mm'), tx.users?.nama || '-', tx.metode_pembayaran, `Rp ${tx.total.toLocaleString('id-ID')}`]),
       headStyles: { fillColor: [13, 148, 136] }, theme: 'striped'
@@ -118,17 +119,17 @@ export default function Reports() {
   const handlePrint = () => window.print();
 
   return (
-    <div className="space-y-6" id="printable-area">
+    <div className="space-y-8 p-1 sm:p-2" id="printable-area">
       <style>{`
         @media print {
           body * { visibility: hidden; }
           #printable-area, #printable-area * { visibility: visible; }
-          #printable-area { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; }
+          #printable-area { position: absolute; left: 0; top: 0; width: 100%; padding: 30px; }
           .no-print, .no-print * { display: none !important; visibility: hidden !important; }
         }
       `}</style>
 
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 no-print">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 no-print">
         <h1 className="text-2xl font-bold text-gray-900">Laporan Penjualan</h1>
         <div className="flex flex-wrap gap-2">
           <button onClick={handlePrint} className="flex items-center gap-1.5 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 text-sm">
