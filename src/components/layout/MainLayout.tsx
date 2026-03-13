@@ -79,7 +79,7 @@ export default function MainLayout() {
           <div className="bg-teal-500 rounded-lg p-1.5">
             <Store className="h-5 w-5 text-white" />
           </div>
-          <span className="text-white text-base font-bold tracking-tight">Baby Shop POS</span>
+          <span className="text-white text-base font-bold tracking-tight">Top Royal Shop</span>
         </div>
       </div>
 
@@ -170,7 +170,7 @@ export default function MainLayout() {
             <div className="bg-teal-500 rounded-md p-1">
               <Store className="h-4 w-4 text-white" />
             </div>
-            <span className="font-bold text-gray-800 text-sm">Baby Shop POS</span>
+            <span className="font-bold text-gray-800 text-sm">Top Royal Shop</span>
           </div>
         </div>
 

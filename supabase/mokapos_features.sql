@@ -172,7 +172,7 @@ ALTER TABLE public.stock_logs ADD COLUMN IF NOT EXISTS alasan TEXT;
 -- ---------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.settings (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  nama_toko VARCHAR(100) DEFAULT 'Baby Shop POS',
+  nama_toko VARCHAR(100) DEFAULT 'Top Royal Shop',
   alamat TEXT DEFAULT '',
   nomor_hp VARCHAR(20) DEFAULT '',
   catatan_struk TEXT DEFAULT 'Terima kasih telah berbelanja!',
@@ -194,7 +194,7 @@ ALTER TABLE public.settings ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFA
 
 -- Insert default settings jika belum ada
 INSERT INTO public.settings (nama_toko, alamat, nomor_hp, catatan_struk)
-SELECT 'Baby Shop POS', 'Jl. Contoh No. 123, Kota', '0812-3456-7890', 'Terima kasih telah berbelanja! Barang yang sudah dibeli tidak dapat dikembalikan.'
+SELECT 'Top Royal Shop', 'Jl. Contoh No. 123, Kota', '0812-3456-7890', 'Terima kasih telah berbelanja! Barang yang sudah dibeli tidak dapat dikembalikan.'
 WHERE NOT EXISTS (SELECT 1 FROM public.settings LIMIT 1);
 
 

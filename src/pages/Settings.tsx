@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { useAuthStore } from '../store/auth';
 import { Save, Store, Phone, MapPin, FileText } from 'lucide-react';
 
 export default function Settings() {
@@ -8,7 +7,7 @@ export default function Settings() {
   const [loading, setLoading] = useState(true);
   const [saved, setSaved] = useState(false);
   const [formData, setFormData] = useState({
-    nama_toko: 'Baby Shop POS',
+    nama_toko: 'Top Royal Shop',
     alamat: '',
     nomor_hp: '',
     catatan_struk: 'Terima kasih telah berbelanja!',
@@ -23,7 +22,7 @@ export default function Settings() {
     if (data) {
       setSettingsId(data.id);
       setFormData({
-        nama_toko: data.nama_toko || 'Baby Shop POS',
+        nama_toko: data.nama_toko || 'Top Royal Shop',
         alamat: data.alamat || '',
         nomor_hp: data.nomor_hp || '',
         catatan_struk: data.catatan_struk || 'Terima kasih!',
@@ -69,7 +68,7 @@ export default function Settings() {
               <input type="text" required value={formData.nama_toko}
                 onChange={(e) => setFormData({ ...formData, nama_toko: e.target.value })}
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500"
-                placeholder="Baby Shop POS" />
+                placeholder="Top Royal Shop" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">

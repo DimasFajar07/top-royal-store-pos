@@ -101,7 +101,7 @@ export default function Reports() {
 
   const exportPDF = () => {
     const doc = new jsPDF() as any;
-    doc.setFontSize(16); doc.text('Laporan Penjualan - Baby Shop POS', 14, 20);
+    doc.setFontSize(16); doc.text('Laporan Penjualan - Top Royal Shop', 14, 20);
     doc.setFontSize(11);
     doc.text(`Periode: ${periodLabel}`, 14, 28);
     doc.text(`Total Pendapatan: Rp ${totalRevenue.toLocaleString('id-ID')}`, 14, 34);

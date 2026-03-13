@@ -573,7 +573,7 @@ export default function POS() {
           <div className="space-y-4">
             <div id="receipt-print-area" className="bg-white p-5 border border-dashed rounded-lg font-mono text-sm max-w-xs mx-auto">
               <div className="text-center mb-4">
-                <h2 className="font-bold text-lg uppercase">Baby Shop POS</h2>
+                <h2 className="font-bold text-lg uppercase">Top Royal Shop</h2>
                 <p className="text-xs text-gray-500">Jl. Contoh No. 123</p>
                 <p className="text-xs text-gray-500">Telp: 0812-3456-7890</p>
               </div>
