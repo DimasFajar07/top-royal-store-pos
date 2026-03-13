@@ -44,7 +44,7 @@ export default function Register() {
           Buat Akun Baru
         </h2>
         <p className="mt-3 text-center text-sm text-gray-600 font-medium">
-          Daftarkan kasir atau admin Top Royal Store
+          Daftarkan kasir atau admin Top Royal Shop
         </p>
       </div>
 

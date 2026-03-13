@@ -44,7 +44,7 @@ export default function Login() {
           <Store className="w-12 h-12" />
         </div>
         <h2 className="mt-2 text-center text-4xl font-extrabold text-gray-900 tracking-tight">
-          Top Royal Store
+          Top Royal Shop
         </h2>
         <p className="mt-3 text-center text-sm text-gray-600 font-medium">
           Masuk untuk mengelola toko Anda

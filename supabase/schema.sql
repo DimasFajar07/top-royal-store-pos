@@ -1,4 +1,4 @@
--- Top Royal Shop Database Schema
+-- Baby Shop POS Database Schema
 
 -- Enable UUID extension
 create extension if not exists "uuid-ossp";
