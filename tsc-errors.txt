@@ -1,0 +1,4 @@
+src/pages/Dashboard.tsx(5,3): error TS6133: 'TrendingUp' is declared but its value is never read.
+src/pages/Dashboard.tsx(22,16): error TS6133: 'Bar' is declared but its value is never read.
+src/pages/Products.tsx(211,40): error TS2304: Cannot find name 'clsx'.
+src/pages/Users.tsx(5,24): error TS6133: 'Edit2' is declared but its value is never read.
