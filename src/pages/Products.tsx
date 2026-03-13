@@ -225,7 +225,7 @@ export default function Products() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                {['Produk', 'Kategori', 'Harga Jual', 'Stok', 'Aksi'].map((h, i) => (
+                {['Produk', 'Kategori', 'Harga Jual', 'Stok', 'Aksi'].map((h) => (
                   <th key={h} className={clsx(
                     "px-4 sm:px-6 py-4 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap",
                     h === 'Aksi' && !isAdmin && "hidden"
