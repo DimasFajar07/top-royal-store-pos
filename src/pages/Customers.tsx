@@ -127,70 +127,81 @@ export default function Customers() {
       </div>
 
       {/* Customer Table */}
-      <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-        <div className="overflow-x-auto">
+      <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+        <div className="overflow-x-auto custom-scrollbar">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                {['Pelanggan', 'Kontak', 'Member Level', 'Poin', 'Total Transaksi', 'Aksi'].map(h => (
-                  <th key={h} className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{h}</th>
+                {['Pelanggan', 'Kontak', 'Level', 'Poin', 'Transaksi', 'Aksi'].map(h => (
+                  <th key={h} className="px-4 sm:px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 bg-white">
               {loading ? (
-                <tr><td colSpan={6} className="text-center py-10 text-gray-400">Memuat...</td></tr>
+                <tr><td colSpan={6} className="text-center py-10 text-gray-400 italic">Memuat data...</td></tr>
               ) : filtered.length === 0 ? (
                 <tr><td colSpan={6} className="text-center py-16">
-                  <div className="flex flex-col items-center justify-center">
-                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3">
-                      <Users className="w-8 h-8 text-gray-400" />
+                  <div className="flex flex-col items-center justify-center p-6">
+                    <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4 border-4 border-white shadow-inner">
+                      <Users className="w-10 h-10 text-gray-300" />
                     </div>
-                    <h3 className="text-sm font-medium text-gray-900 mb-1">Pencarian kosong</h3>
-                    <p className="text-sm text-gray-500 mb-4">Belum ada pelanggan yang terdaftar atau cocok dengan pencarian.</p>
-                    <button onClick={() => handleOpen()} className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 shadow-sm text-sm font-semibold transition-colors">
-                      <Plus className="w-4 h-4" /> Tambah Pelanggan Baru
+                    <h3 className="text-base font-bold text-gray-900 mb-1">Tidak ada hasil</h3>
+                    <p className="text-sm text-gray-500 mb-6 text-center max-w-xs">Data tidak ditemukan atau belum ada pelanggan terdaftar.</p>
+                    <button onClick={() => handleOpen()} className="flex items-center gap-2 px-6 py-2.5 bg-primary-600 text-white rounded-full hover:bg-primary-700 shadow-lg shadow-primary-200 text-sm font-bold transition-all active:scale-95">
+                      <Plus className="w-4 h-4" /> Tambah Pelanggan
                     </button>
                   </div>
                 </td></tr>
               ) : filtered.map(c => {
                 const badge = getMemberBadge(c.total_transaksi || 0);
                 return (
-                  <tr key={c.id} className="hover:bg-gray-50">
-                    <td className="px-5 py-3 whitespace-nowrap">
+                  <tr key={c.id} className="hover:bg-primary-50/30 transition-colors group">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 bg-primary-100 rounded-full flex items-center justify-center text-primary-700 font-bold text-sm flex-shrink-0">
+                        <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center text-white font-extrabold text-sm shadow-md shadow-primary-100">
                           {c.nama.charAt(0).toUpperCase()}
                         </div>
-                        <p className="text-sm font-semibold text-gray-900">{c.nama}</p>
+                        <div>
+                          <p className="text-sm font-bold text-gray-900">{c.nama}</p>
+                          <p className="text-[10px] text-gray-400 font-medium">Customer ID: {c.id.slice(0, 8)}</p>
+                        </div>
                       </div>
                     </td>
-                    <td className="px-5 py-3 whitespace-nowrap">
-                      <div className="space-y-0.5">
-                        {c.nomor_hp && <div className="flex items-center gap-1 text-xs text-gray-500"><Phone className="w-3 h-3" /> {c.nomor_hp}</div>}
-                        {c.email && <div className="flex items-center gap-1 text-xs text-gray-400"><Mail className="w-3 h-3" /> {c.email}</div>}
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                      <div className="space-y-1">
+                        {c.nomor_hp && <div className="flex items-center gap-2 text-xs text-gray-600 font-medium"><Phone className="w-3.5 h-3.5 text-primary-500" /> {c.nomor_hp}</div>}
+                        {c.email && <div className="flex items-center gap-2 text-[11px] text-gray-400"><Mail className="w-3.5 h-3.5" /> {c.email}</div>}
                       </div>
                     </td>
-                    <td className="px-5 py-3 whitespace-nowrap">
-                      <span className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full border ${badge.color}`}>
-                        <Star className="w-3 h-3" /> {badge.label}
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-3 py-1 rounded-full border shadow-sm ${badge.color}`}>
+                        <Star className="w-3 h-3 fill-current" /> {badge.label}
                       </span>
                     </td>
-                    <td className="px-5 py-3 whitespace-nowrap">
-                      <span className="inline-flex items-center gap-1 font-bold text-primary-600 bg-primary-50 px-2 py-0.5 rounded-md text-xs">
-                        {c.poin || 0} Pts
-                      </span>
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-extrabold text-primary-700">
+                          {c.poin || 0}
+                        </span>
+                        <span className="text-[10px] text-gray-400 font-medium whitespace-nowrap">Loyalty Points</span>
+                      </div>
                     </td>
-                    <td className="px-5 py-3 whitespace-nowrap text-sm font-bold text-gray-700">{c.total_transaksi || 0}×</td>
-                    <td className="px-5 py-3 whitespace-nowrap">
-                      <div className="flex gap-1">
-                        <button onClick={() => handleViewDetail(c)} title="Lihat Riwayat" className="p-1.5 text-gray-400 hover:text-primary-600">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm font-bold text-gray-800">{c.total_transaksi || 0}</span>
+                        <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Trx</span>
+                      </div>
+                    </td>
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => handleViewDetail(c)} title="Riwayat" className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
                           <ShoppingBag className="w-4 h-4" />
                         </button>
-                        <button onClick={() => handleOpen(c)} className="p-1.5 text-gray-400 hover:text-primary-600">
+                        <button onClick={() => handleOpen(c)} className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all">
                           <Edit2 className="w-4 h-4" />
                         </button>
-                        <button onClick={() => handleDelete(c.id)} className="p-1.5 text-gray-400 hover:text-red-600">
+                        <button onClick={() => handleDelete(c.id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>

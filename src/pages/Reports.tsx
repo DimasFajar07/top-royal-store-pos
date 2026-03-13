@@ -8,6 +8,7 @@ import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Toolti
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import clsx from 'clsx';
 
 declare module 'jspdf' { interface jsPDF { autoTable: (o: any) => void; } }
 
@@ -241,36 +242,46 @@ export default function Reports() {
         ))}
       </div>
 
-      {/* Transaction Table */}
-      <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-        <div className="px-5 py-3 border-b bg-gray-50">
-          <h2 className="font-semibold text-gray-700 text-sm">Detail Transaksi — {periodLabel}</h2>
+      {/* Transactions Table */}
+      <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+          <h2 className="text-lg font-bold text-gray-900">Detail Transaksi</h2>
+          <span className="px-3 py-1 bg-white border border-gray-200 rounded-full text-xs font-bold text-gray-500">
+            {transactions.length} Trx
+          </span>
         </div>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto custom-scrollbar">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                {['Tanggal & Waktu', 'Kasir', 'Metode', 'Diskon', 'Total'].map(h => (
-                  <th key={h} className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{h}</th>
+                {['ID', 'Waktu', 'Kasir', 'Metode', 'Total', 'Laba'].map(h => (
+                  <th key={h} className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 bg-white">
               {loading ? (
-                <tr><td colSpan={5} className="text-center py-8 text-gray-400">Memuat...</td></tr>
+                <tr><td colSpan={6} className="text-center py-10 text-gray-400 italic">Memuat data...</td></tr>
               ) : transactions.length === 0 ? (
-                <tr><td colSpan={5} className="text-center py-8 text-gray-400">Tidak ada transaksi</td></tr>
+                <tr><td colSpan={6} className="text-center py-16 text-gray-400">Tidak ada transaksi untuk periode ini.</td></tr>
               ) : transactions.map(tx => (
-                <tr key={tx.id} className="hover:bg-gray-50">
-                  <td className="px-5 py-3 text-sm text-gray-700">{format(new Date(tx.tanggal), 'dd MMM yyyy, HH:mm')}</td>
-                  <td className="px-5 py-3 text-sm text-gray-500">{tx.users?.nama || '-'}</td>
-                  <td className="px-5 py-3">
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium uppercase ${tx.metode_pembayaran === 'cash' ? 'bg-green-100 text-green-700' : tx.metode_pembayaran === 'e-wallet' ? 'bg-blue-100 text-blue-700' : 'bg-violet-100 text-violet-700'}`}>
+                <tr key={tx.id} className="hover:bg-primary-50/30 transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap text-xs font-bold text-primary-600">#{tx.id.slice(0, 8)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <p className="text-xs font-bold text-gray-900">{format(new Date(tx.tanggal), 'dd MMM yyyy', { locale: idLocale })}</p>
+                    <p className="text-[10px] text-gray-400">{format(new Date(tx.tanggal), 'HH:mm')}</p>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-600 font-medium">{tx.users?.nama || 'Kasir'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={clsx(
+                      'px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider',
+                      tx.metode_pembayaran === 'cash' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'
+                    )}>
                       {tx.metode_pembayaran}
                     </span>
                   </td>
-                  <td className="px-5 py-3 text-sm text-green-600">{tx.diskon > 0 ? `-Rp ${tx.diskon.toLocaleString('id-ID')}` : '-'}</td>
-                  <td className="px-5 py-3 text-sm font-semibold text-gray-800">Rp {tx.total.toLocaleString('id-ID')}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-xs font-extrabold text-gray-900">Rp {tx.total.toLocaleString('id-ID')}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-xs font-extrabold text-emerald-600">Rp {(tx.laba || 0).toLocaleString('id-ID')}</td>
                 </tr>
               ))}
             </tbody>

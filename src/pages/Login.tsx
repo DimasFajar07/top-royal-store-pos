@@ -32,21 +32,21 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-pink-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div className="min-h-[100dvh] bg-gradient-to-br from-blue-50 via-white to-pink-50 flex flex-col justify-center py-6 sm:py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       {/* Decorative background elements */}
-      <div className="absolute top-0 -left-4 w-72 h-72 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob"></div>
-      <div className="absolute top-0 -right-4 w-72 h-72 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-2000"></div>
-      <div className="absolute -bottom-8 left-20 w-72 h-72 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-4000"></div>
+      <div className="absolute top-0 -left-12 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob"></div>
+      <div className="absolute top-0 -right-12 w-96 h-96 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-2000"></div>
+      <div className="absolute -bottom-24 left-20 w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-4000"></div>
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
-        <div className="flex justify-center items-center space-x-3 text-blue-600 mb-4 animate-bounce-slow">
-          <Baby className="w-12 h-12" />
-          <Store className="w-12 h-12" />
+        <div className="flex justify-center items-center space-x-3 text-blue-600 mb-2 sm:mb-4 animate-bounce-slow">
+          <Baby className="w-10 h-10 sm:w-12 sm:h-12" />
+          <Store className="w-10 h-10 sm:w-12 sm:h-12" />
         </div>
-        <h2 className="mt-2 text-center text-4xl font-extrabold text-gray-900 tracking-tight">
+        <h2 className="mt-2 text-center text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
           Top Royal Shop
         </h2>
-        <p className="mt-3 text-center text-sm text-gray-600 font-medium">
+        <p className="mt-2 sm:mt-3 text-center text-sm text-gray-600 font-medium">
           Masuk untuk mengelola toko Anda
         </p>
       </div>

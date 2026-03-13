@@ -220,82 +220,83 @@ export default function Products() {
       </div>
 
       {/* Products Table */}
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+      <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+        <div className="overflow-x-auto custom-scrollbar">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produk</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Harga</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stok</th>
-                {isAdmin && <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>}
+                {['Produk', 'Kategori', 'Harga Jual', 'Stok', 'Aksi'].map((h, i) => (
+                  <th key={h} className={clsx(
+                    "px-4 sm:px-6 py-4 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap",
+                    h === 'Aksi' && !isAdmin && "hidden"
+                  )}>{h}</th>
+                ))}
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-gray-100">
               {isLoading && products.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">Loading products...</td>
+                  <td colSpan={5} className="px-6 py-12 text-center text-gray-400 italic">Memuat produk...</td>
                 </tr>
               ) : filteredProducts.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">Tidak ada produk ditemukan.</td>
+                  <td colSpan={5} className="px-6 py-16 text-center">
+                    <div className="flex flex-col items-center justify-center">
+                      <Search className="w-12 h-12 text-gray-200 mb-2" />
+                      <p className="text-sm font-medium text-gray-500">Produk tidak ditemukan</p>
+                    </div>
+                  </td>
                 </tr>
               ) : (
                 filteredProducts.map((product) => (
-                  <tr key={product.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="h-10 w-10 flex-shrink-0 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden">
+                  <tr key={product.id} className="hover:bg-primary-50/20 transition-colors group">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-3">
+                        <div className="h-12 w-12 flex-shrink-0 bg-gray-50 rounded-xl flex items-center justify-center overflow-hidden border border-gray-100 shadow-sm transition-transform group-hover:scale-105">
                           {product.gambar ? (
-                            <img src={product.gambar} alt="" className="h-10 w-10 object-cover" />
+                            <img src={product.gambar} alt="" className="h-full w-full object-cover" />
                           ) : (
-                            <div className="text-gray-400 font-bold text-xs">IMG</div>
+                            <div className="text-[10px] text-gray-300 font-extrabold uppercase">No Pic</div>
                           )}
                         </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{product.nama_produk}</div>
-                          <div className="text-sm text-gray-500">{product.barcode || '-'}</div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-gray-900 truncate max-w-[150px] sm:max-w-xs">{product.nama_produk}</p>
+                          <p className="text-[10px] text-gray-400 font-medium tracking-wider">{product.barcode || '—'}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                      <span className="px-2.5 py-1 text-[10px] font-bold rounded-lg bg-blue-50 text-blue-600 border border-blue-100">
                         {product.kategori}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      Rp {product.harga.toLocaleString('id-ID')}
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-extrabold text-primary-700">Rp {product.harga.toLocaleString('id-ID')}</span>
+                        {isAdmin && <span className="text-[10px] text-gray-400 font-medium">Modal: Rp {(product.harga_beli || 0).toLocaleString('id-ID')}</span>}
+                      </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                       <span className={clsx(
-                        "px-2 inline-flex text-xs leading-5 font-semibold rounded-full",
-                        product.stok <= 5 ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
+                        "px-2.5 py-1 text-[10px] font-bold rounded-lg border",
+                        product.stok <= 5 ? "bg-red-50 text-red-600 border-red-100" : "bg-green-50 text-green-600 border-green-100"
                       )}>
-                        {product.stok}
+                        {product.stok} <span className="text-[8px] opacity-70">UNIT</span>
                       </span>
                     </td>
                     {isAdmin && (
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button
-                          onClick={() => handleOpenAdjust(product)}
-                          title="Sesuaikan Stok"
-                          className="text-teal-600 hover:text-teal-900 mr-3"
-                        >
-                          <BarChart2 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleOpenModal(product)}
-                          className="text-primary-600 hover:text-primary-900 mr-3"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(product.id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-right">
+                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => handleOpenAdjust(product)} title="Sesuaikan Stok" className="p-2 text-teal-600 hover:bg-teal-50 rounded-lg transition-all">
+                            <BarChart2 className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => handleOpenModal(product)} title="Edit" className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => handleDelete(product.id)} title="Hapus" className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </td>
                     )}
                   </tr>

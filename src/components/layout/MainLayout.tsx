@@ -131,15 +131,15 @@ export default function MainLayout() {
   );
 
   return (
-    <div className="flex h-screen bg-gray-100 font-sans">
+    <div className="flex min-h-[100dvh] bg-gray-100 font-sans overflow-x-hidden">
       
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden">
-          <div className="fixed inset-0 bg-black/60" onClick={() => setSidebarOpen(false)} />
-          <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-gray-900 shadow-2xl z-50">
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
+          <div className="fixed inset-y-0 left-0 flex w-72 flex-col bg-gray-900 shadow-2xl z-50 transform transition-transform duration-300">
             <button
-              className="absolute top-3 right-3 text-gray-400 hover:text-white p-1"
+              className="absolute top-4 right-4 text-gray-400 hover:text-white p-2 bg-gray-800 rounded-full"
               onClick={() => setSidebarOpen(false)}
             >
               <X className="h-5 w-5" />
@@ -151,30 +151,35 @@ export default function MainLayout() {
 
       {/* Desktop sidebar */}
       <div className="hidden lg:flex lg:flex-shrink-0">
-        <div className="flex w-60 flex-col bg-gray-900 shadow-xl">
+        <div className="flex w-60 flex-col bg-gray-900 shadow-xl border-r border-gray-800">
           <SidebarContent />
         </div>
       </div>
 
       {/* Main content */}
-      <div className="flex flex-col flex-1 overflow-hidden">
+      <div className="flex flex-col flex-1 min-w-0">
         {/* Mobile topbar */}
-        <div className="lg:hidden flex items-center gap-3 bg-white border-b px-4 py-3 shadow-sm">
-          <button
-            className="text-gray-500 hover:text-gray-900"
-            onClick={() => setSidebarOpen(true)}
-          >
-            <Menu className="h-6 w-6" />
-          </button>
-          <div className="flex items-center gap-2">
-            <div className="bg-teal-500 rounded-md p-1">
-              <Store className="h-4 w-4 text-white" />
+        <div className="lg:hidden sticky top-0 z-30 flex items-center justify-between bg-white border-b px-4 py-3 shadow-sm">
+          <div className="flex items-center gap-3">
+            <button
+              className="text-gray-500 hover:text-gray-900 p-1"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <Menu className="h-6 w-6" />
+            </button>
+            <div className="flex items-center gap-2">
+              <div className="bg-teal-500 rounded-md p-1">
+                <Store className="h-4 w-4 text-white" />
+              </div>
+              <span className="font-bold text-gray-800 text-sm">Top Royal Shop</span>
             </div>
-            <span className="font-bold text-gray-800 text-sm">Top Royal Shop</span>
+          </div>
+          <div className="bg-teal-600 text-white h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs">
+            {profile?.nama?.charAt(0).toUpperCase() || 'U'}
           </div>
         </div>
 
-        <main className="flex-1 relative overflow-y-auto focus:outline-none bg-gray-100 p-4 sm:p-6">
+        <main className="flex-1 relative focus:outline-none bg-gray-100 p-3 sm:p-6 lg:p-8">
           <Outlet />
         </main>
       </div>
