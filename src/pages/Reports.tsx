@@ -119,17 +119,17 @@ export default function Reports() {
   const handlePrint = () => window.print();
 
   return (
-    <div className="space-y-8 p-1 sm:p-2" id="printable-area">
+    <div className="max-w-7xl mx-auto space-y-10 p-4 sm:p-8" id="printable-area">
       <style>{`
         @media print {
           body * { visibility: hidden; }
           #printable-area, #printable-area * { visibility: visible; }
-          #printable-area { position: absolute; left: 0; top: 0; width: 100%; padding: 30px; }
+          #printable-area { position: absolute; left: 0; top: 0; width: 100%; padding: 40px; }
           .no-print, .no-print * { display: none !important; visibility: hidden !important; }
         }
       `}</style>
 
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 no-print">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-8 no-print">
         <h1 className="text-2xl font-bold text-gray-900">Laporan Penjualan</h1>
         <div className="flex flex-wrap gap-2">
           <button onClick={handlePrint} className="flex items-center gap-1.5 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 text-sm">
@@ -155,7 +155,7 @@ export default function Reports() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
         {[
           { label: 'Total Pendapatan', value: `Rp ${totalRevenue.toLocaleString('id-ID')}`, icon: DollarSign, color: 'text-teal-600', bg: 'bg-teal-50' },
           { label: 'Jumlah Transaksi', value: transactions.length, icon: ShoppingCart, color: 'text-blue-600', bg: 'bg-blue-50' },
@@ -190,7 +190,7 @@ export default function Reports() {
       </div>
 
       {/* Metode Breakdown */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         {[
           { label: 'Tunai', color: 'border-l-green-500', amount: totalTunai, count: transactions.filter(t => t.metode_pembayaran === 'cash').length },
           { label: 'E-Wallet', color: 'border-l-blue-500', amount: transactions.filter(t => t.metode_pembayaran === 'e-wallet').reduce((s, t) => s + t.total, 0), count: transactions.filter(t => t.metode_pembayaran === 'e-wallet').length },
