@@ -6,6 +6,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import POS from './pages/POS';
 import Products from './pages/Products';
+import ProductGallery from './pages/ProductGallery';
 import Reports from './pages/Reports';
 import Users from './pages/Users';
 import Customers from './pages/Customers';
@@ -29,6 +30,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/pos" element={<POS />} />
           <Route path="/products" element={<Products />} />
+          <Route path="/gallery" element={<ProductGallery />} />
           <Route path="/categories" element={<Categories />} />
           <Route path="/stock" element={<StockManagement />} />
           <Route path="/customers" element={<Customers />} />
