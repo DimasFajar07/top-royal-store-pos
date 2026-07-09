@@ -8,7 +8,7 @@ export interface Product {
   categories?: { nama: string }; // Joined from Supabase
   kategori: string; // We'll keep this for UI compatibility (mapped from categories)
   harga: number;
-  harga_beli: number;
+  harga_modal: number;
   stok: number;
   barcode: string | null;
   gambar: string | null;
@@ -60,8 +60,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
           ...item,
           gambar: imageUrl,
           kategori: item.categories?.nama || 'Tanpa Kategori',
-          harga: item.harga_jual || item.harga,
-          harga_beli: item.harga_beli || 0
+          harga: item.harga_jual || item.harga 
         };
       }) || [];
 
@@ -133,21 +132,28 @@ export const useProductStore = create<ProductState>((set, get) => ({
 
   uploadImage: async (file) => {
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileName = `product_${Date.now()}_${Math.random().toString(36).slice(2)}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from('products')
-        .upload(filePath, file);
+        .upload(fileName, file, { upsert: true, contentType: file.type });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        // Jika bucket tidak ada / private, lempar error yang informatif
+        throw new Error(`Upload gagal: ${uploadError.message}. Pastikan bucket "products" ada dan bersifat Public di Supabase Storage.`);
+      }
 
-      const { data } = supabase.storage.from('products').getPublicUrl(filePath);
+      const { data } = supabase.storage.from('products').getPublicUrl(fileName);
+
+      if (!data?.publicUrl || !data.publicUrl.startsWith('http')) {
+        throw new Error('Bucket "products" sepertinya masih Private. Ubah menjadi Public di Supabase Dashboard → Storage → Policies lalu coba lagi.');
+      }
+
       return data.publicUrl;
     } catch (err: any) {
       set({ error: err.message });
-      return null;
+      throw err; // re-throw supaya ProductGallery bisa menampilkan pesan error spesifik
     }
   },
 }));

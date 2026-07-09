@@ -8,7 +8,6 @@ import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Toolti
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import clsx from 'clsx';
 
 declare module 'jspdf' { interface jsPDF { autoTable: (o: any) => void; } }
 
@@ -55,55 +54,28 @@ export default function Reports() {
       const { buckets, startISO, endISO } = getPeriodRange();
       const { data } = await supabase.from('transactions')
         .select(`
-          id, 
-          tanggal, 
-          total, 
-          metode_pembayaran, 
-          diskon, 
+          id, tanggal, total, metode_pembayaran, diskon, 
           users(nama),
-          transaction_items(
-            jumlah,
-            harga,
-            products(harga_beli)
-          )
+          transaction_items(harga_modal, jumlah)
         `)
         .gte('tanggal', startISO)
         .lte('tanggal', endISO)
         .order('tanggal', { ascending: false });
 
-      const txs = (data || []).map(tx => {
-        // Calculate HPP (Cost of Goods Sold) for this transaction
-        const hpp = tx.transaction_items?.reduce((acc: number, item: any) => {
-          const cost = item.products?.harga_beli || 0;
-          return acc + (cost * item.jumlah);
-        }, 0) || 0;
-        
-        return {
-          ...tx,
-          hpp,
-          laba: tx.total - hpp
-        };
-      });
-
+      const txs = data || [];
       setTransactions(txs);
 
       // Group by bucket
       const grouped = buckets.map(b => {
         const inBucket = txs.filter(tx => tx.tanggal >= b.start && tx.tanggal <= b.end);
-        return { 
-          ...b, 
-          total: inBucket.reduce((s, t) => s + t.total, 0), 
-          laba: inBucket.reduce((s, t) => s + t.laba, 0),
-          count: inBucket.length 
-        };
+        return { ...b, total: inBucket.reduce((s, t) => s + t.total, 0), count: inBucket.length };
       });
 
       setChartData({
         labels: grouped.map(b => b.label),
         datasets: [
           { label: 'Penjualan (Rp)', data: grouped.map(b => b.total), backgroundColor: 'rgba(13,148,136,0.7)', borderColor: '#0d9488', borderWidth: 1, borderRadius: 6 },
-          { label: 'Laba Kotor (Rp)', data: grouped.map(b => b.laba), backgroundColor: 'rgba(245,158,11,0.6)', borderColor: '#f59e0b', borderWidth: 1, borderRadius: 6 },
-          { label: 'Jumlah Transaksi', data: grouped.map(b => b.count), backgroundColor: 'rgba(99,102,241,0.4)', borderColor: '#6366f1', borderWidth: 1, borderRadius: 6, yAxisID: 'y2' }
+          { label: 'Jumlah Transaksi', data: grouped.map(b => b.count), backgroundColor: 'rgba(99,102,241,0.6)', borderColor: '#6366f1', borderWidth: 1, borderRadius: 6, yAxisID: 'y2' }
         ]
       });
     } finally {
@@ -112,58 +84,83 @@ export default function Reports() {
   };
 
   const totalRevenue = transactions.reduce((s, t) => s + t.total, 0);
-  const totalLabaKotor = transactions.reduce((s, t) => s + t.laba, 0);
-  const totalLabaBersih = totalLabaKotor; // For now assuming no extra expenses
+  // const totalDiskon = transactions.reduce((s, t) => s + (t.diskon || 0), 0);
+  
+  // Hitung Total Modal
+  const totalModal = transactions.reduce((sumTx, tx) => {
+    const modalTx = tx.transaction_items?.reduce((sumItem: number, item: any) => {
+      return sumItem + ((item.harga_modal || 0) * item.jumlah);
+    }, 0) || 0;
+    return sumTx + modalTx;
+  }, 0);
+
+  const labaKotor = totalRevenue - totalModal; 
+  // Untuk saat ini, asumsikan laba bersih = laba kotor, karena belum ada pengeluaran operasional lain.
+  const labaBersih = labaKotor;
+
   const avgRevenue = transactions.length > 0 ? Math.round(totalRevenue / transactions.length) : 0;
   const totalTunai = transactions.filter(t => t.metode_pembayaran === 'cash').reduce((s, t) => s + t.total, 0);
-  const totalNonTunai = transactions.filter(t => t.metode_pembayaran !== 'cash').reduce((s, t) => s + t.total, 0);
 
   const periodLabel = { daily: '7 Hari Terakhir', weekly: '5 Minggu Terakhir', monthly: '6 Bulan Terakhir' }[period];
-
+  
   const exportExcel = () => {
-    const ws = XLSX.utils.json_to_sheet(transactions.map(tx => ({
-      'Tanggal': format(new Date(tx.tanggal), 'dd/MM/yyyy HH:mm'),
-      'Kasir': tx.users?.nama || '-',
-      'Metode': tx.metode_pembayaran,
-      'Diskon (Rp)': tx.diskon || 0,
-      'Total (Rp)': tx.total,
-    })));
+    const ws = XLSX.utils.json_to_sheet(transactions.map(tx => {
+      const modalTx = tx.transaction_items?.reduce((s: number, i: any) => s + ((i.harga_modal||0) * i.jumlah), 0) || 0;
+      return {
+        'Tanggal': format(new Date(tx.tanggal), 'dd/MM/yyyy HH:mm'),
+        'Kasir': tx.users?.nama || '-',
+        'Metode': tx.metode_pembayaran,
+        'Diskon (Rp)': tx.diskon || 0,
+        'Harga Modal (Rp)': modalTx,
+        'Omzet (Rp)': tx.total,
+        'Laba Kotor (Rp)': tx.total - modalTx
+      };
+    }));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Laporan');
-    XLSX.writeFile(wb, `Laporan_${period}_${format(new Date(), 'yyyyMMdd')}.xlsx`);
+    XLSX.writeFile(wb, `Laporan_Laba_${period}_${format(new Date(), 'yyyyMMdd')}.xlsx`);
   };
 
   const exportPDF = () => {
     const doc = new jsPDF() as any;
-    doc.setFontSize(16); doc.text('Laporan Penjualan - Top Royal Shop', 20, 20);
+    doc.setFontSize(16); doc.text('Laporan Keuangan & Laba', 14, 20);
     doc.setFontSize(11);
-    doc.text(`Periode: ${periodLabel}`, 20, 30);
-    doc.text(`Total Pendapatan: Rp ${totalRevenue.toLocaleString('id-ID')}`, 20, 38);
-    doc.text(`Total Transaksi: ${transactions.length}`, 20, 46);
+    doc.text(`Periode: ${periodLabel}`, 14, 28);
+    doc.text(`Total Omzet: Rp ${totalRevenue.toLocaleString('id-ID')} | Total Laba: Rp ${labaKotor.toLocaleString('id-ID')}`, 14, 34);
+    doc.text(`Total Transaksi: ${transactions.length}`, 14, 40);
     doc.autoTable({
-      startY: 55,
-      margin: { left: 20, right: 20 },
-      head: [['No', 'Tanggal', 'Kasir', 'Metode', 'Total']],
-      body: transactions.map((tx, i) => [i + 1, format(new Date(tx.tanggal), 'dd/MM/yyyy HH:mm'), tx.users?.nama || '-', tx.metode_pembayaran, `Rp ${tx.total.toLocaleString('id-ID')}`]),
+      startY: 48,
+      head: [['No', 'Tanggal', 'Kasir', 'Metode', 'Omzet', 'Laba']],
+      body: transactions.map((tx, i) => {
+        const modalTx = tx.transaction_items?.reduce((s: number, it: any) => s + ((it.harga_modal||0) * it.jumlah), 0) || 0;
+        return [
+          i + 1, 
+          format(new Date(tx.tanggal), 'dd/MM/yyyy HH:mm'), 
+          tx.users?.nama || '-', 
+          tx.metode_pembayaran, 
+          `Rp ${tx.total.toLocaleString('id-ID')}`,
+          `Rp ${(tx.total - modalTx).toLocaleString('id-ID')}`
+        ];
+      }),
       headStyles: { fillColor: [13, 148, 136] }, theme: 'striped'
     });
-    doc.save(`Laporan_${period}_${format(new Date(), 'yyyyMMdd')}.pdf`);
+    doc.save(`Laporan_Laba_${period}_${format(new Date(), 'yyyyMMdd')}.pdf`);
   };
 
   const handlePrint = () => window.print();
 
   return (
-    <div className="max-w-7xl mx-auto space-y-10 p-4 sm:p-8" id="printable-area">
+    <div className="space-y-6" id="printable-area">
       <style>{`
         @media print {
           body * { visibility: hidden; }
           #printable-area, #printable-area * { visibility: visible; }
-          #printable-area { position: absolute; left: 0; top: 0; width: 100%; padding: 40px; }
+          #printable-area { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; }
           .no-print, .no-print * { display: none !important; visibility: hidden !important; }
         }
       `}</style>
 
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-8 no-print">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 no-print">
         <h1 className="text-2xl font-bold text-gray-900">Laporan Penjualan</h1>
         <div className="flex flex-wrap gap-2">
           <button onClick={handlePrint} className="flex items-center gap-1.5 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 text-sm">
@@ -189,23 +186,20 @@ export default function Reports() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         {[
-          { label: 'Total Pendapatan', value: `Rp ${totalRevenue.toLocaleString('id-ID')}`, icon: DollarSign, color: 'text-teal-600', bg: 'bg-teal-50' },
-          { label: 'Laba Kotor', value: `Rp ${totalLabaKotor.toLocaleString('id-ID')}`, icon: TrendingUp, color: 'text-amber-600', bg: 'bg-amber-50' },
-          { label: 'Laba Bersih', value: `Rp ${totalLabaBersih.toLocaleString('id-ID')}`, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+          { label: 'Total Omzet (Penjualan)', value: `Rp ${totalRevenue.toLocaleString('id-ID')}`, icon: DollarSign, color: 'text-teal-600', bg: 'bg-teal-50' },
+          { label: 'Laba Kotor', value: `Rp ${labaKotor.toLocaleString('id-ID')}`, icon: TrendingUp, color: 'text-green-600', bg: 'bg-green-50' },
+          { label: 'Laba Bersih', value: `Rp ${labaBersih.toLocaleString('id-ID')}`, icon: TrendingUp, color: 'text-green-600', bg: 'bg-green-50' },
           { label: 'Jumlah Transaksi', value: transactions.length, icon: ShoppingCart, color: 'text-blue-600', bg: 'bg-blue-50' },
           { label: 'Rata-rata / Transaksi', value: `Rp ${avgRevenue.toLocaleString('id-ID')}`, icon: TrendingUp, color: 'text-violet-600', bg: 'bg-violet-50' },
-          { label: 'Non-Tunai', value: `Rp ${totalNonTunai.toLocaleString('id-ID')}`, icon: ShoppingCart, color: 'text-orange-600', bg: 'bg-orange-50' },
         ].map(({ label, value, icon: Icon, color, bg }) => (
-          <div key={label} className="bg-white rounded-xl shadow-md border border-gray-100 p-6 flex flex-col justify-between hover:shadow-lg transition-shadow">
-            <div>
-              <div className={`inline-flex p-3 ${bg} rounded-xl mb-3`}>
-                <Icon className={`w-5 h-5 ${color}`} />
-              </div>
-              <p className="text-sm text-gray-500 font-medium">{label}</p>
+          <div key={label} className="bg-white rounded-xl shadow-sm border p-4">
+            <div className={`inline-flex p-2 ${bg} rounded-lg mb-2`}>
+              <Icon className={`w-4 h-4 ${color}`} />
             </div>
-            <p className="text-xl font-extrabold text-gray-900 mt-2 truncate">{value}</p>
+            <p className="text-xs text-gray-500">{label}</p>
+            <p className="text-base font-bold text-gray-900 mt-0.5 truncate">{value}</p>
           </div>
         ))}
       </div>
@@ -228,11 +222,11 @@ export default function Reports() {
       </div>
 
       {/* Metode Breakdown */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <div className="grid grid-cols-3 gap-3">
         {[
           { label: 'Tunai', color: 'border-l-green-500', amount: totalTunai, count: transactions.filter(t => t.metode_pembayaran === 'cash').length },
-          { label: 'E-Wallet', color: 'border-l-blue-500', amount: transactions.filter(t => t.metode_pembayaran === 'e-wallet').reduce((s, t) => s + t.total, 0), count: transactions.filter(t => t.metode_pembayaran === 'e-wallet').length },
-          { label: 'Transfer', color: 'border-l-violet-500', amount: transactions.filter(t => t.metode_pembayaran === 'transfer').reduce((s, t) => s + t.total, 0), count: transactions.filter(t => t.metode_pembayaran === 'transfer').length },
+          { label: 'E-Wallet', color: 'border-l-blue-500', amount: transactions.filter(t => t.metode_pembayaran.startsWith('e-wallet')).reduce((s, t) => s + t.total, 0), count: transactions.filter(t => t.metode_pembayaran.startsWith('e-wallet')).length },
+          { label: 'Transfer', color: 'border-l-violet-500', amount: transactions.filter(t => t.metode_pembayaran.startsWith('transfer')).reduce((s, t) => s + t.total, 0), count: transactions.filter(t => t.metode_pembayaran.startsWith('transfer')).length },
         ].map(({ label, color, amount, count }) => (
           <div key={label} className={`bg-white rounded-xl shadow-sm border-l-4 ${color} border border-gray-100 p-4`}>
             <p className="text-xs text-gray-500 mb-1">{label}</p>
@@ -242,46 +236,36 @@ export default function Reports() {
         ))}
       </div>
 
-      {/* Transactions Table */}
-      <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-gray-900">Detail Transaksi</h2>
-          <span className="px-3 py-1 bg-white border border-gray-200 rounded-full text-xs font-bold text-gray-500">
-            {transactions.length} Trx
-          </span>
+      {/* Transaction Table */}
+      <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+        <div className="px-5 py-3 border-b bg-gray-50">
+          <h2 className="font-semibold text-gray-700 text-sm">Detail Transaksi — {periodLabel}</h2>
         </div>
-        <div className="overflow-x-auto custom-scrollbar">
+        <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                {['ID', 'Waktu', 'Kasir', 'Metode', 'Total', 'Laba'].map(h => (
-                  <th key={h} className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">{h}</th>
+                {['Tanggal & Waktu', 'Kasir', 'Metode', 'Diskon', 'Total'].map(h => (
+                  <th key={h} className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 bg-white">
+            <tbody className="divide-y divide-gray-100">
               {loading ? (
-                <tr><td colSpan={6} className="text-center py-10 text-gray-400 italic">Memuat data...</td></tr>
+                <tr><td colSpan={5} className="text-center py-8 text-gray-400">Memuat...</td></tr>
               ) : transactions.length === 0 ? (
-                <tr><td colSpan={6} className="text-center py-16 text-gray-400">Tidak ada transaksi untuk periode ini.</td></tr>
+                <tr><td colSpan={5} className="text-center py-8 text-gray-400">Tidak ada transaksi</td></tr>
               ) : transactions.map(tx => (
-                <tr key={tx.id} className="hover:bg-primary-50/30 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap text-xs font-bold text-primary-600">#{tx.id.slice(0, 8)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <p className="text-xs font-bold text-gray-900">{format(new Date(tx.tanggal), 'dd MMM yyyy', { locale: idLocale })}</p>
-                    <p className="text-[10px] text-gray-400">{format(new Date(tx.tanggal), 'HH:mm')}</p>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-600 font-medium">{tx.users?.nama || 'Kasir'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={clsx(
-                      'px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider',
-                      tx.metode_pembayaran === 'cash' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'
-                    )}>
+                <tr key={tx.id} className="hover:bg-gray-50">
+                  <td className="px-5 py-3 text-sm text-gray-700">{format(new Date(tx.tanggal), 'dd MMM yyyy, HH:mm')}</td>
+                  <td className="px-5 py-3 text-sm text-gray-500">{tx.users?.nama || '-'}</td>
+                  <td className="px-5 py-3">
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium uppercase ${tx.metode_pembayaran === 'cash' ? 'bg-green-100 text-green-700' : tx.metode_pembayaran.startsWith('e-wallet') ? 'bg-blue-100 text-blue-700' : 'bg-violet-100 text-violet-700'}`}>
                       {tx.metode_pembayaran}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-xs font-extrabold text-gray-900">Rp {tx.total.toLocaleString('id-ID')}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-xs font-extrabold text-emerald-600">Rp {(tx.laba || 0).toLocaleString('id-ID')}</td>
+                  <td className="px-5 py-3 text-sm text-green-600">{tx.diskon > 0 ? `-Rp ${tx.diskon.toLocaleString('id-ID')}` : '-'}</td>
+                  <td className="px-5 py-3 text-sm font-semibold text-gray-800">Rp {tx.total.toLocaleString('id-ID')}</td>
                 </tr>
               ))}
             </tbody>

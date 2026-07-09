@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import Modal from '../components/ui/Modal';
-import { Plus, Search, Edit2, Trash2, Phone, Mail, Users, Star, ShoppingBag } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Phone, Mail, Users, Star, ShoppingBag, UserPlus } from 'lucide-react';
 import { format } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
 
@@ -89,120 +89,112 @@ export default function Customers() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Pelanggan & Member</h1>
+      <div className="flex justify-between items-center bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+        <h1 className="text-xl font-bold text-slate-800">Pelanggan & Member</h1>
         <button onClick={() => handleOpen()}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 text-sm font-semibold">
+          className="flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-600 rounded-lg border hover:bg-slate-100 hover:text-slate-800 text-sm font-semibold transition-all">
           <Plus className="w-4 h-4" /> Tambah Pelanggan
         </button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {[
-          { label: 'Total Pelanggan', value: totalCustomers, icon: Users, color: 'text-primary-600', bg: 'bg-primary-50' },
-          { label: 'Gold Member', value: goldMembers, icon: Star, color: 'text-yellow-600', bg: 'bg-yellow-50' },
-          { label: 'Silver Member', value: silverMembers, icon: Star, color: 'text-gray-500', bg: 'bg-gray-50' },
+          { label: 'Total Pelanggan', value: totalCustomers, icon: Users, color: 'text-slate-700', bg: 'bg-white' },
+          { label: 'Gold Member', value: goldMembers, icon: Star, color: 'text-yellow-500', bg: 'bg-white' },
+          { label: 'Silver Member', value: silverMembers, icon: Star, color: 'text-slate-400', bg: 'bg-white' },
         ].map(({ label, value, icon: Icon, color, bg }) => (
-          <div key={label} className="bg-white rounded-xl shadow-sm border p-4 flex items-center gap-3">
-            <div className={`p-2.5 rounded-xl ${bg}`}>
-              <Icon className={`w-5 h-5 ${color}`} />
+          <div key={label} className={`${bg} rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center gap-4`}>
+            <div className={`p-4 rounded-xl flex items-center justify-center bg-slate-50 border border-slate-100`}>
+              <Icon className={`w-6 h-6 ${color}`} />
             </div>
             <div>
-              <p className="text-xs text-gray-500">{label}</p>
-              <p className="text-xl font-bold text-gray-800">{value}</p>
+              <p className="text-xs tracking-wide font-medium text-slate-500 uppercase mb-1">{label}</p>
+              <p className="text-2xl font-black text-slate-800">{value}</p>
             </div>
           </div>
         ))}
       </div>
 
       {/* Search */}
-      <div className="bg-white p-4 rounded-xl shadow-sm border">
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <input type="text" placeholder="Cari nama, no. HP, atau email..."
+      <div className="bg-white p-2 rounded-2xl shadow-sm border border-slate-200">
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5" />
+          <input type="text" placeholder="Cari nama, no. HP, atau email.."
             value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-primary-500 focus:border-primary-500" />
+            className="w-full pl-12 pr-4 py-3 border-transparent rounded-xl text-[15px] focus:ring-0 focus:border-transparent outline-none placeholder:text-slate-300 text-slate-700" />
         </div>
       </div>
 
       {/* Customer Table */}
-      <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto custom-scrollbar">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-slate-100">
+            <thead className="bg-white border-b border-slate-100">
               <tr>
-                {['Pelanggan', 'Kontak', 'Level', 'Poin', 'Transaksi', 'Aksi'].map(h => (
-                  <th key={h} className="px-4 sm:px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">{h}</th>
+                {['Pelanggan', 'Kontak', 'Member Level', 'Poin', 'Total Transaksi', 'Aksi'].map((h, i) => (
+                  <th key={h} className={`px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest ${i===0?'pl-8':''}`}>{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 bg-white">
+            <tbody className="divide-y divide-slate-50 bg-white">
               {loading ? (
-                <tr><td colSpan={6} className="text-center py-10 text-gray-400 italic">Memuat data...</td></tr>
+                <tr><td colSpan={6} className="text-center py-10 text-gray-400">Memuat...</td></tr>
               ) : filtered.length === 0 ? (
                 <tr><td colSpan={6} className="text-center py-16">
-                  <div className="flex flex-col items-center justify-center p-6">
-                    <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4 border-4 border-white shadow-inner">
-                      <Users className="w-10 h-10 text-gray-300" />
+                  <div className="flex flex-col items-center justify-center">
+                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3">
+                      <Users className="w-8 h-8 text-gray-400" />
                     </div>
-                    <h3 className="text-base font-bold text-gray-900 mb-1">Tidak ada hasil</h3>
-                    <p className="text-sm text-gray-500 mb-6 text-center max-w-xs">Data tidak ditemukan atau belum ada pelanggan terdaftar.</p>
-                    <button onClick={() => handleOpen()} className="flex items-center gap-2 px-6 py-2.5 bg-primary-600 text-white rounded-full hover:bg-primary-700 shadow-lg shadow-primary-200 text-sm font-bold transition-all active:scale-95">
-                      <Plus className="w-4 h-4" /> Tambah Pelanggan
+                    <h3 className="text-sm font-medium text-gray-900 mb-1">Pencarian kosong</h3>
+                    <p className="text-sm text-gray-500 mb-4">Belum ada pelanggan yang terdaftar atau cocok dengan pencarian.</p>
+                    <button onClick={() => handleOpen()} className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 shadow-sm text-sm font-semibold transition-colors">
+                      <Plus className="w-4 h-4" /> Tambah Pelanggan Baru
                     </button>
                   </div>
                 </td></tr>
               ) : filtered.map(c => {
                 const badge = getMemberBadge(c.total_transaksi || 0);
                 return (
-                  <tr key={c.id} className="hover:bg-primary-50/30 transition-colors group">
-                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center text-white font-extrabold text-sm shadow-md shadow-primary-100">
-                          {c.nama.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-gray-900">{c.nama}</p>
-                          <p className="text-[10px] text-gray-400 font-medium">Customer ID: {c.id.slice(0, 8)}</p>
-                        </div>
+                  <tr key={c.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap pl-8">
+                      <div className="flex items-center gap-4">
+                        <span className="text-sm font-black text-slate-800 w-5 text-center">{c.nama.charAt(0).toUpperCase()}</span>
+                        <p className="text-[13px] font-bold text-slate-700">{c.nama}</p>
                       </div>
                     </td>
-                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4 whitespace-nowrap">
                       <div className="space-y-1">
-                        {c.nomor_hp && <div className="flex items-center gap-2 text-xs text-gray-600 font-medium"><Phone className="w-3.5 h-3.5 text-primary-500" /> {c.nomor_hp}</div>}
-                        {c.email && <div className="flex items-center gap-2 text-[11px] text-gray-400"><Mail className="w-3.5 h-3.5" /> {c.email}</div>}
+                        {c.nomor_hp && <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500"><Phone className="w-3 h-3 text-slate-400" /> {c.nomor_hp}</div>}
+                        {c.email && <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400"><Mail className="w-3 h-3 text-slate-300" /> {c.email}</div>}
                       </div>
                     </td>
-                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-3 py-1 rounded-full border shadow-sm ${badge.color}`}>
-                        <Star className="w-3 h-3 fill-current" /> {badge.label}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-3 py-1 rounded-full border ${
+                        c.total_transaksi >= 20 ? 'bg-amber-50 text-amber-600 border-amber-200' : 
+                        c.total_transaksi >= 10 ? 'bg-slate-50 text-slate-500 border-slate-200' :
+                        c.total_transaksi >= 3 ? 'bg-orange-50 text-orange-600 border-orange-200' :
+                        'bg-blue-50 text-blue-500 border-blue-200'
+                      }`}>
+                        <Star className="w-3 h-3" /> {badge.label}
                       </span>
                     </td>
-                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-extrabold text-primary-700">
-                          {c.poin || 0}
-                        </span>
-                        <span className="text-[10px] text-gray-400 font-medium whitespace-nowrap">Loyalty Points</span>
-                      </div>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="inline-flex items-center font-bold text-slate-800 text-xs">
+                        {c.poin || 0} Pts
+                      </span>
                     </td>
-                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-sm font-bold text-gray-800">{c.total_transaksi || 0}</span>
-                        <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Trx</span>
-                      </div>
-                    </td>
-                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => handleViewDetail(c)} title="Riwayat" className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
-                          <ShoppingBag className="w-4 h-4" />
+                    <td className="px-6 py-4 whitespace-nowrap text-xs font-bold text-slate-800">{c.total_transaksi || 0}×</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex gap-2">
+                        <button onClick={() => handleViewDetail(c)} title="Lihat Riwayat" className="p-1.5 text-slate-300 hover:text-slate-600 hover:bg-slate-100 rounded-md transition-colors">
+                          <ShoppingBag className="w-[15px] h-[15px]" />
                         </button>
-                        <button onClick={() => handleOpen(c)} className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all">
-                          <Edit2 className="w-4 h-4" />
+                        <button onClick={() => handleOpen(c)} className="p-1.5 text-slate-300 hover:text-slate-600 hover:bg-slate-100 rounded-md transition-colors">
+                          <Edit2 className="w-[15px] h-[15px]" />
                         </button>
-                        <button onClick={() => handleDelete(c.id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
-                          <Trash2 className="w-4 h-4" />
+                        <button onClick={() => handleDelete(c.id)} className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors">
+                          <Trash2 className="w-[15px] h-[15px]" />
                         </button>
                       </div>
                     </td>
@@ -215,29 +207,33 @@ export default function Customers() {
       </div>
 
       {/* Modal Tambah/Edit */}
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editing ? 'Edit Pelanggan' : 'Tambah Pelanggan'}>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {[
-            { label: 'Nama Lengkap', field: 'nama', type: 'text', required: true, placeholder: 'Nama pelanggan' },
-            { label: 'Nomor HP / WhatsApp', field: 'nomor_hp', type: 'tel', required: false, placeholder: '0812-xxxx-xxxx' },
-            { label: 'Email (opsional)', field: 'email', type: 'email', required: false, placeholder: 'email@contoh.com' },
-          ].map(({ label, field, type, required, placeholder }) => (
-            <div key={field}>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-              <input type={type} required={required} placeholder={placeholder}
-                value={(formData as any)[field]}
-                onChange={(e) => setFormData({ ...formData, [field]: e.target.value })}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500" />
-            </div>
-          ))}
-          <div className="flex gap-3 pt-2">
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <form onSubmit={handleSubmit} className="px-1 py-2 space-y-5">
+          <div className="flex items-center gap-2.5 mb-6">
+            <UserPlus className="w-6 h-6 text-indigo-700" />
+            <h2 className="text-xl font-bold text-[#0f172a]">{editing ? 'Edit Member' : 'Daftar Member Baru'}</h2>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Nama Lengkap</label>
+            <input type="text" required placeholder="Contoh: Andi Wijaya"
+              value={formData.nama}
+              onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
+              className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none text-slate-700 placeholder:text-gray-400" />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Nomor WhatsApp</label>
+            <input type="tel" required placeholder="0812..."
+              value={formData.nomor_hp}
+              onChange={(e) => setFormData({ ...formData, nomor_hp: e.target.value })}
+              className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none text-slate-700 placeholder:text-gray-400" />
+          </div>
+
+          <div className="pt-3">
             <button type="submit" disabled={formLoading}
-              className="flex-1 py-2.5 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 disabled:opacity-50">
-              {formLoading ? 'Menyimpan...' : 'Simpan'}
-            </button>
-            <button type="button" onClick={() => setIsModalOpen(false)}
-              className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200">
-              Batal
+              className="w-full py-3.5 bg-[#0f172a] text-white rounded-lg font-bold text-[15px] hover:bg-slate-800 disabled:opacity-50 transition-colors shadow-sm tracking-wide">
+              {formLoading ? 'Menyimpan...' : 'Simpan Member'}
             </button>
           </div>
         </form>

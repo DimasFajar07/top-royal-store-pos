@@ -33,7 +33,7 @@ export default function Products() {
     kategori_id: '',
     kategori: '', // for fallback
     harga: 0,
-    harga_beli: 0,
+    harga_modal: 0,
     stok: 0,
     barcode: '',
     gambar: ''
@@ -70,7 +70,7 @@ export default function Products() {
         kategori_id: product.kategori_id || '',
         kategori: product.kategori || '',
         harga: product.harga,
-        harga_beli: product.harga_beli || 0,
+        harga_modal: product.harga_modal || 0,
         stok: product.stok,
         barcode: product.barcode || '',
         gambar: product.gambar || ''
@@ -82,7 +82,7 @@ export default function Products() {
         kategori_id: categories.length > 0 ? categories[0].id : '',
         kategori: '',
         harga: 0,
-        harga_beli: 0,
+        harga_modal: 0,
         stok: 0,
         barcode: '',
         gambar: ''
@@ -109,7 +109,7 @@ export default function Products() {
       nama_produk: formData.nama_produk,
       kategori_id: formData.kategori_id, // must use the valid UUID
       harga_jual: formData.harga, // assuming table uses harga_jual
-      harga_beli: formData.harga_beli,
+      harga_modal: formData.harga_modal,
       stok: formData.stok,
       gambar: imageUrl,
       barcode: formData.barcode || null,
@@ -220,83 +220,86 @@ export default function Products() {
       </div>
 
       {/* Products Table */}
-      <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto custom-scrollbar">
+      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                {['Produk', 'Kategori', 'Harga Jual', 'Stok', 'Aksi'].map((h) => (
-                  <th key={h} className={clsx(
-                    "px-4 sm:px-6 py-4 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap",
-                    h === 'Aksi' && !isAdmin && "hidden"
-                  )}>{h}</th>
-                ))}
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produk</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Harga Modal</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Harga Jual</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stok</th>
+                {isAdmin && <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>}
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-100">
+            <tbody className="bg-white divide-y divide-gray-200">
               {isLoading && products.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-400 italic">Memuat produk...</td>
+                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">Loading products...</td>
                 </tr>
               ) : filteredProducts.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-16 text-center">
-                    <div className="flex flex-col items-center justify-center">
-                      <Search className="w-12 h-12 text-gray-200 mb-2" />
-                      <p className="text-sm font-medium text-gray-500">Produk tidak ditemukan</p>
-                    </div>
-                  </td>
+                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">Tidak ada produk ditemukan.</td>
                 </tr>
               ) : (
                 filteredProducts.map((product) => (
-                  <tr key={product.id} className="hover:bg-primary-50/20 transition-colors group">
-                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <div className="h-12 w-12 flex-shrink-0 bg-gray-50 rounded-xl flex items-center justify-center overflow-hidden border border-gray-100 shadow-sm transition-transform group-hover:scale-105">
-                          {product.gambar ? (
-                            <img src={product.gambar} alt="" className="h-full w-full object-cover" />
-                          ) : (
-                            <div className="text-[10px] text-gray-300 font-extrabold uppercase">No Pic</div>
-                          )}
+                  <tr key={product.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="h-10 w-10 flex-shrink-0 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden">
+                          <img 
+                            src={product.gambar || `https://ui-avatars.com/api/?name=${encodeURIComponent(product.nama_produk)}&background=random&color=fff&size=150&bold=true`} 
+                            alt="" 
+                            className="h-10 w-10 object-cover" 
+                          />
                         </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-bold text-gray-900 truncate max-w-[150px] sm:max-w-xs">{product.nama_produk}</p>
-                          <p className="text-[10px] text-gray-400 font-medium tracking-wider">{product.barcode || '—'}</p>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">{product.nama_produk}</div>
+                          <div className="text-sm text-gray-500">{product.barcode || '-'}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
-                      <span className="px-2.5 py-1 text-[10px] font-bold rounded-lg bg-blue-50 text-blue-600 border border-blue-100">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                         {product.kategori}
                       </span>
                     </td>
-                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-extrabold text-primary-700">Rp {product.harga.toLocaleString('id-ID')}</span>
-                        {isAdmin && <span className="text-[10px] text-gray-400 font-medium">Modal: Rp {(product.harga_beli || 0).toLocaleString('id-ID')}</span>}
-                      </div>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      Rp {(product.harga_modal || 0).toLocaleString('id-ID')}
                     </td>
-                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                      Rp {product.harga.toLocaleString('id-ID')}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
                       <span className={clsx(
-                        "px-2.5 py-1 text-[10px] font-bold rounded-lg border",
-                        product.stok <= 5 ? "bg-red-50 text-red-600 border-red-100" : "bg-green-50 text-green-600 border-green-100"
+                        "px-2 inline-flex text-xs leading-5 font-semibold rounded-full",
+                        product.stok <= 5 ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
                       )}>
-                        {product.stok} <span className="text-[8px] opacity-70">UNIT</span>
+                        {product.stok}
                       </span>
                     </td>
                     {isAdmin && (
-                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-right">
-                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button onClick={() => handleOpenAdjust(product)} title="Sesuaikan Stok" className="p-2 text-teal-600 hover:bg-teal-50 rounded-lg transition-all">
-                            <BarChart2 className="w-4 h-4" />
-                          </button>
-                          <button onClick={() => handleOpenModal(product)} title="Edit" className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                          <button onClick={() => handleDelete(product.id)} title="Hapus" className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button
+                          onClick={() => handleOpenAdjust(product)}
+                          title="Sesuaikan Stok"
+                          className="text-teal-600 hover:text-teal-900 mr-3"
+                        >
+                          <BarChart2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleOpenModal(product)}
+                          className="text-primary-600 hover:text-primary-900 mr-3"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(product.id)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </td>
                     )}
                   </tr>
@@ -386,14 +389,14 @@ export default function Products() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Harga Beli / Modal (Rp)</label>
+              <label className="block text-sm font-medium text-gray-700">Harga Modal (Rp)</label>
               <input
                 type="number"
                 required
                 min="0"
-                value={formData.harga_beli}
-                onChange={(e) => setFormData({ ...formData, harga_beli: parseInt(e.target.value) || 0 })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2 bg-yellow-50"
+                value={formData.harga_modal}
+                onChange={(e) => setFormData({ ...formData, harga_modal: parseInt(e.target.value) || 0 })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
               />
             </div>
             <div>
@@ -404,22 +407,23 @@ export default function Products() {
                 min="0"
                 value={formData.harga}
                 onChange={(e) => setFormData({ ...formData, harga: parseInt(e.target.value) || 0 })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2 bg-green-50"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
               />
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Stok</label>
-            <input
-              type="number"
-              required
-              min="0"
-              value={formData.stok}
-              onChange={(e) => setFormData({ ...formData, stok: parseInt(e.target.value) || 0 })}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
-            />
-          </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Stok Awal</label>
+              <input
+                type="number"
+                required
+                min="0"
+                value={formData.stok}
+                onChange={(e) => setFormData({ ...formData, stok: parseInt(e.target.value) || 0 })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                disabled={!!editingProduct} // Stok diedit via Sesuaikan Stok setelah terbuat
+              />
+            </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700">Barcode / SKU</label>

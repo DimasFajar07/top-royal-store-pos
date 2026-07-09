@@ -5,7 +5,7 @@ import { clsx } from 'clsx';
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  title: string;
+  title?: React.ReactNode;
   children: React.ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl';
 }
@@ -37,16 +37,18 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' }:
           sizeClasses[size]
         )}>
           <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium leading-6 text-gray-900">{title}</h3>
-              <button
-                type="button"
-                className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none"
-                onClick={onClose}
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
+            {title && (
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium leading-6 text-gray-900">{title}</h3>
+                <button
+                  type="button"
+                  className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none"
+                  onClick={onClose}
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+            )}
             <div>{children}</div>
           </div>
         </div>
